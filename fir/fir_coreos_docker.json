@@ -78,11 +78,6 @@
             }
           }
         ]
-      },
-      "Metadata": {
-        "AWS::CloudFormation::Designer": {
-          "id": "f9bfbca1-a3da-464d-add1-cdeb1b1a8d70"
-        }
       }
     },
     "Ingress4001": {
@@ -259,57 +254,6 @@
             ]
           }
         }
-      },
-      "Metadata": {
-        "AWS::CloudFormation::Designer": {
-          "id": "90f583a0-2f4e-41a3-89c4-44b1beb3d9d8"
-        }
-      }
-    }
-  },
-  "Metadata": {
-    "AWS::CloudFormation::Designer": {
-      "f9bfbca1-a3da-464d-add1-cdeb1b1a8d70": {
-        "size": {
-          "width": 60,
-          "height": 60
-        },
-        "position": {
-          "x": 60,
-          "y": 90
-        },
-        "z": 1,
-        "embeds": []
-      },
-      "90f583a0-2f4e-41a3-89c4-44b1beb3d9d8": {
-        "size": {
-          "width": 60,
-          "height": 60
-        },
-        "position": {
-          "x": 180,
-          "y": 90
-        },
-        "z": 1,
-        "embeds": [],
-        "ismemberof": [
-          "f9bfbca1-a3da-464d-add1-cdeb1b1a8d70"
-        ]
-      },
-      "a416002d-df65-4da6-88b6-b4486287cb06": {
-        "size": {
-          "width": 60,
-          "height": 60
-        },
-        "position": {
-          "x": 60,
-          "y": 210
-        },
-        "z": 1,
-        "embeds": [],
-        "isassociatedwith": [
-          "90f583a0-2f4e-41a3-89c4-44b1beb3d9d8"
-        ]
       }
     }
   }
