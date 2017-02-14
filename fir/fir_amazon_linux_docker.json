@@ -1,0 +1,151 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Amazon Linux with FIR Docker Container. No Elastic IP.",
+  "Mappings": {
+    "RegionMap": {
+      "us-east-1": {
+        "AMI": "ami-0b33d91d"
+      },
+      "us-east-2": {
+        "AMI": "ami-c55673a0"
+      },
+      "us-west-2": {
+        "AMI": "ami-f173cc91"
+      },
+      "us-west-1": {
+        "AMI": "ami-165a0876"
+      }
+    }
+  },
+  "Parameters": {
+    "InstanceType": {
+      "Description": "EC2 HVM instance type (m3.medium, etc).",
+      "Type": "String",
+      "Default": "m3.medium",
+      "ConstraintDescription": "Must be a valid EC2 HVM instance type."
+    },
+    "AllowSSHFrom": {
+      "Description": "The net block (CIDR) that SSH is available to.",
+      "Default": "0.0.0.0/0",
+      "Type": "String"
+    },
+    "VpcId": {
+        "Description": "ID of the VPC onto which to launch the application eg. vpc-1234abcd",
+        "Type": "AWS::EC2::VPC::Id"
+    },
+    "PrivateVpcSubnets" : {
+        "Description": "Subnet to use in VPC for instances eg. subnet-abcd1234",
+        "Type": "List<AWS::EC2::Subnet::Id>"
+    },
+    "KeyPair": {
+      "Description": "The name of an EC2 Key Pair to allow SSH access to the instance.",
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "FIRSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Security Group for FIR Instance",
+        "VpcId": { "Ref": "VpcId" },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "22",
+            "ToPort": "22",
+            "CidrIp": {
+              "Ref": "AllowSSHFrom"
+            }
+          }
+        ]
+      }
+    },
+    "Ingress8000": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "IpProtocol": "tcp",
+        "FromPort": "8000",
+        "ToPort": "8000",
+        "SourceSecurityGroupId": {
+          "Fn::GetAtt": [
+            "CoreOSSecurityGroup",
+            "GroupId"
+          ]
+        },
+        "GroupId": {
+          "Fn::GetAtt": [
+            "CoreOSSecurityGroup",
+            "GroupId"
+          ]
+        }
+      }
+    },
+    "FIRInstance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "LaunchConfigurationName": {
+          "Ref": "FIRServerLaunchConfig"
+        },
+        "MinSize": "3",
+        "MaxSize": "12",
+        "VPCZoneIdentifier": { "Ref": "PrivateVpcSubnets" },
+        "DesiredCapacity": {
+          "Ref": "ClusterSize"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Ref": "AWS::StackName"
+            },
+            "PropagateAtLaunch": true
+          }
+        ]
+      }
+    },
+    "FIRServerLaunchConfig": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": {
+          "Fn::FindInMap": [
+            "RegionMap",
+            {
+              "Ref": "AWS::Region"
+            },
+            "AMI"
+          ]
+        },
+        "InstanceType": {
+          "Ref": "InstanceType"
+        },
+        "KeyName": {
+          "Ref": "KeyPair"
+        },
+        "SecurityGroups": [
+          {
+            "Ref": "FIRSecurityGroup"
+          }
+        ],
+        "SubnetId": {
+          "Ref": "PrivateVpcSubnets"
+        },
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "yum -y update",
+                "yum install -y docker",
+                "service docker start",
+                "# Run FIR Docker container",
+                "wget --no-check-certificate -O /home/fir/Dockerfile https://raw.githubusercontent.com/certsocietegenerale/FIR/master/docker/Dockerfile",
+                "docker build -t fir /home/fir",
+                "docker run -it -p 8000:8000 fir"
+              ]
+            ]
+          }
+        }
+      }
+    }
+  }
+}
