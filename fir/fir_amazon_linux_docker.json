@@ -68,42 +68,19 @@
         "ToPort": "8000",
         "SourceSecurityGroupId": {
           "Fn::GetAtt": [
-            "CoreOSSecurityGroup",
+            "FIRSecurityGroup",
             "GroupId"
           ]
         },
         "GroupId": {
           "Fn::GetAtt": [
-            "CoreOSSecurityGroup",
+            "FIRSecurityGroup",
             "GroupId"
           ]
         }
       }
     },
     "FIRInstance": {
-      "Type": "AWS::EC2::Instance",
-      "Properties": {
-        "LaunchConfigurationName": {
-          "Ref": "FIRServerLaunchConfig"
-        },
-        "MinSize": "3",
-        "MaxSize": "12",
-        "VPCZoneIdentifier": { "Ref": "PrivateVpcSubnets" },
-        "DesiredCapacity": {
-          "Ref": "ClusterSize"
-        },
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": {
-              "Ref": "AWS::StackName"
-            },
-            "PropagateAtLaunch": true
-          }
-        ]
-      }
-    },
-    "FIRServerLaunchConfig": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
         "ImageId": {
@@ -144,6 +121,14 @@
               ]
             ]
           }
+        }
+      }
+    },
+    "FIREIP": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "InstanceId": {
+          "Ref": "FIRInstance" 
         }
       }
     }
